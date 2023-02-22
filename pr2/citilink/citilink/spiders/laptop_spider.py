@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 
 class LaptopSpider(scrapy.Spider):
+
     name = 'laptops'
     allowed_domains = ['www.citilink.ru']
     start_urls = ['https://www.citilink.ru/catalog/noutbuki/']
@@ -11,13 +12,16 @@ class LaptopSpider(scrapy.Spider):
     pages_count = 14
 
     def start_requests(self):
+
         for page in range(1, self.pages_count + 1):
             # sleep(2)
             url = f'https://www.citilink.ru/catalog/noutbuki/?p={page}'
             print('Окей')
             yield scrapy.Request(url, callback=self.parse_pages)
 
+
     def parse_pages(self, response):
+
         laptop_pages = response.css('div.ProductCardVertical__description a::attr(href)').extract()
         for laptop_page in laptop_pages:
             print('Окей ноут')
@@ -25,13 +29,14 @@ class LaptopSpider(scrapy.Spider):
             url = 'https://www.citilink.ru' + laptop_page + 'properties/'
             yield scrapy.Request(url, callback=self.parse)
 
+
     def parse(self, response, **kwargs):
         # Получение названия продукта
         name_list = response.css('h1.Heading.Heading_level_1::text').get().strip().split(',')[0].split(' ')
         del name_list[0]
         name = " ".join(name_list)
 
-        # Придумать обработку характеристик!)
+
         specifications = {}
         specifications_full = response.css('div.SpecificationsFull').extract()
 
@@ -54,6 +59,7 @@ class LaptopSpider(scrapy.Spider):
             assert isinstance(row, object)
             specifications[key] = row
             specifications.pop('None', None)
+
 
         yield {
             'name': name,
